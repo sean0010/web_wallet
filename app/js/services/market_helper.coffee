@@ -175,7 +175,7 @@ class MarketHelper
         return null
 
     date: (t) ->
-        dateRE = /(\d\d\d\d)(\d\d)(\d\d)T(\d\d)(\d\d)(\d\d)/
+        dateRE = /(\d\d\d\d)-?(\d\d)-?(\d\d)T(\d\d):?(\d\d):?(\d\d)/
         match = t.match(dateRE)
         return 0 unless match
         nums = []

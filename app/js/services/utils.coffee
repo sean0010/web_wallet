@@ -75,7 +75,7 @@ servicesModule.factory "Utils", ($translate,$q) ->
         new Date(@toUTCDate(t))
 
     toUTCDate: (t) ->
-        dateRE = /(\d\d\d\d)(\d\d)(\d\d)T(\d\d)(\d\d)(\d\d)/
+        dateRE = /(\d\d\d\d)-?(\d\d)-?(\d\d)T(\d\d):?(\d\d):?(\d\d)/
         match = t.match(dateRE)
         return 0 unless match
         nums = []
@@ -104,7 +104,7 @@ servicesModule.factory "Utils", ($translate,$q) ->
         return "#{year}#{month}#{day}T#{hour}#{minute}#{second}"
 
     is_registered: (account) ->
-        if account and account.registration_date == "19700101T000000"
+        if account and account.registration_date == "1970-01-01T00:00:00"
             return false
         return true
 
@@ -130,7 +130,7 @@ servicesModule.factory "Utils", ($translate,$q) ->
             deferred.resolve("")
             return deferred.promise
 
-        #_date="20141001T164450"
+        #_date="2014-10-01T16:44:50"
         date = @toDate(_date)
         diff = (date - Date.now()) / 1000.0
         #console.log _date,date,diff,date.toLocaleDateString() #20140930T191750 Tue Sep 30 2014 15:17:50 GMT-0400 (EDT) -71989.91 9/30/2014

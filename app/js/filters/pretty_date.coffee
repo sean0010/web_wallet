@@ -1,6 +1,6 @@
 angular.module("app").filter "prettyDate", (Utils)->
     (date) ->
-        return "-" if !date or date.valueOf() == "19700101T000000"
+        return "-" if !date or date.valueOf() == "1970-01-01T00:00:00"
         if angular.isDate(date)
             return date.toLocaleString()
         else
@@ -25,7 +25,7 @@ angular.module("app").filter "secondsAgo", (Utils)->
       #console.log "attempting to prettify null date"
       return "9999999999999"
 
-    if date.valueOf() == "19700101T000000"
+    if date.valueOf() == "1970-01-01T00:00:00"
       return "9999999999999"
 
     if not angular.isDate(date)
