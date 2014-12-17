@@ -17,7 +17,7 @@ processRpcError = (response, Shared) ->
     dont_report = false
     method = null
     error_msg = if response.data?.error?.message? then response.data.error.message else response.data
-
+    
     if response.config? and response.config.url.match(/\/rpc$/)
         if error_msg.match(/No such wallet exists/) or error_msg.match(/wallet does not exist/)
             navigate_to("createwallet") unless window.location.hash == "#/createwallet"
