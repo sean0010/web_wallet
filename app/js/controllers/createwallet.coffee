@@ -7,8 +7,6 @@ angular.module("app").controller "CreateWalletController", ($scope, $rootScope, 
     $scope.spending_password = ""
     $scope.descriptionCollapsed = true
     $scope.license_accepted = false
-    $scope.light_weight_enabled = if window.bts then on else off
-    
 
     $scope.accept_license = ->
           $scope.license_accepted = true
@@ -57,6 +55,7 @@ angular.module("app").controller "CreateWalletController", ($scope, $rootScope, 
         private_entropy.push num event.clientX, event.clientY
         private_entropy.push num event.offsetX, event.offsetY
         private_entropy.push num event.screenX, event.screenY
+        private_entropy.push event.force if event.force
         if public_entropy.length < 40
             if new Date().getTime() % 3 == 0
                 public_entropy.push chars.charAt(i % chars_length)
@@ -66,6 +65,6 @@ angular.module("app").controller "CreateWalletController", ($scope, $rootScope, 
         $scope.$apply ->
             $scope.entropy = public_entropy.join('')
     $rootElement.on 'mousemove', (event) ->
-        on_mouse_event(event)
-    $rootElement.on 'mousetouch', (event) ->
-        on_mouse_event(event)
+        on_mouse_event event
+    $rootElement.on 'touchmove', (event) ->
+        on_mouse_event event.changedTouches[0] 
