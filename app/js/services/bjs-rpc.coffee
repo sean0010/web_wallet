@@ -25,8 +25,7 @@ class BitsharesJsRpc
             err = null
             try
                 ret = fun.apply(@, params)
-                result = result:ret unless ret.result
-                defer.resolve data:result
+                defer.resolve data:result:ret
             catch error
                 err = error
                 error = message:error unless error.message
