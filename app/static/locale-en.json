@@ -154,7 +154,7 @@
         "create_new_wallet": "Create a New Wallet",
         "info": "Your password is mandatory and controls when and how your funds may be spent. If you forget this password you will be unable to transfer your shares.",
         "create_wallet": "Create Wallet",
-        "mouse_entropy_info": "Use touch or mouse around on the screen to collect additional random data.  We will combine this with your browser's secure random numbers to create your master private key."
+        "mouse_entropy_info": "Move your mouse to collect additional random data.  We will combine this with your browser's secure random numbers to create your master private key."
     },
     "index": {
         "title": "BitShares Wallet",

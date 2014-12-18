@@ -6,6 +6,12 @@ angular.module("app").controller "CreateWalletController", ($scope, $rootScope, 
     $scope.wallet_name = "default"
     $scope.spending_password = ""
     $scope.descriptionCollapsed = true
+    $scope.license_accepted = false
+    $scope.light_weight_enabled = if window.bts then on else off
+    
+
+    $scope.accept_license = ->
+          $scope.license_accepted = true
 
     $scope.submitForm = (isValid, password) ->
         if isValid
@@ -65,3 +71,5 @@ angular.module("app").controller "CreateWalletController", ($scope, $rootScope, 
     $rootElement.on 'touchmove', (event) ->
         #console.log event
         on_mouse_event event.originalEvent.changedTouches[0] 
+    $rootElement.on 'mousetouch', (event) ->
+        on_mouse_event(event)
