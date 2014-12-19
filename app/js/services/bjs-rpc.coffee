@@ -25,6 +25,7 @@ class BitsharesJsRpc
             err = null
             try
                 ret = fun.apply(@, params)
+                ret = null if ret is undefined
                 defer.resolve data:result:ret
             catch error
                 err = error

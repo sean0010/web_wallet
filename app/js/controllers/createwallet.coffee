@@ -67,4 +67,5 @@ angular.module("app").controller "CreateWalletController", ($scope, $rootScope, 
     $rootElement.on 'mousemove', (event) ->
         on_mouse_event event
     $rootElement.on 'touchmove', (event) ->
-        on_mouse_event event.changedTouches[0] 
+        #console.log event
+        on_mouse_event event.originalEvent.changedTouches[0] 
