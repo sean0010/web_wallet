@@ -42,6 +42,7 @@
 	margin-top: -100px;
 }
 
+
 .splashpage-wrapper .description.default {
 	font-size: 12px;
 	color: #ccc;
@@ -114,4 +115,38 @@
 
 .splashpage-wrapper .spacedrow {
 	margin-top: 10px;
+}
+
+@media only screen and (max-width:632px) {
+    
+    .body {
+        margin-top: 0px !important;
+    }
+    .splashpage-wrapper{
+        top: 20%;
+    }
+    .content .splashpage-wrapper{
+        width: 280px;
+        left: 67%;
+    }
+    .splashpage-wrapper .str-bottom {
+        padding: 0px;
+        
+    }
+    
+    .form-group{
+        width: 300px;
+    }
+    .license-body {
+        margin-top: 10px;
+        margin-bottom: 15px;
+    }
+    #accept_license {
+        margin-top: 20;
+        left: 0px;
+        top: 3px;
+    }
+    .accept_license_text {
+        font-size: 9pt;
+    }
 }
