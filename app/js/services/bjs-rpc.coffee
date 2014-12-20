@@ -6,27 +6,33 @@ class BitsharesJsRpc
     constructor: (@RpcService, @q) ->
         return unless window.bts
         console.log "[BitShares-JS] enabled\t",window.bts
-        @jwallet_api = new window.bts.wallet.WalletAPI()
-        @rpc_service_request = @RpcService.request # proxy
+        @wallet_api = new window.bts.client.WalletAPI()
+        @rpc_service_request = @RpcService.request
         @RpcService.request = @request # proxy requests
         
     request: (method, params, error_handler) =>
+        method = switch method
+            when 'get_info'
+                'wallet_' + method
+            else
+                method
         fun = (=>
-            m = method.split '_', 2 # wallet open
-            api_group = m[0]
-            api_function = m[1]
+            prefix_index = method.indexOf('_')
+            return null if prefix_index is -1
+            api_group = method.substring 0, prefix_index
+            api_function = method.substring(prefix_index + 1)
             switch api_group
                 when 'wallet'
-                    @jwallet_api[api_function]
+                    @wallet_api[api_function]
         )()
         defer = @q.defer()
         if fun
             ret = null
             err = null
             try
-                ret = fun.apply(@, params)
+                ret = fun.apply(@wallet_api, params)
                 ret = null if ret is undefined
-                defer.resolve data:result:ret
+                defer.resolve result:ret
             catch error
                 err = error
                 error = message:error unless error.message
@@ -40,9 +46,8 @@ class BitsharesJsRpc
                         defer.reject
                             data:error:error.message
             finally
-                console.log '[BitShares-JS] intercept\t', method, params,'return ->',ret,'error ->',err
-        else # proxy
-            #console.log '[BitShares-JS] pass-through\t',method,params
+                console.log '[BitShares-JS] intercept\t', method, params,'return',ret,'error',err
+        else
             ret = null
             err = null
             promise = @rpc_service_request method, params, error_handler
@@ -54,7 +59,7 @@ class BitsharesJsRpc
                     err = error
                     defer.reject error
             ).finally ()=>
-                console.log '[BitShares-JS] pass-through\t', method, params,'return ->',ret,'error ->',err
+                console.log '[BitShares-JS] pass-through\t', method, params,'return',ret,'error',err
         
         defer.promise
 
