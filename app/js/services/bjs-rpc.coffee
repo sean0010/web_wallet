@@ -6,7 +6,7 @@ class BitsharesJsRpc
     constructor: (@RpcService, @q) ->
         return unless window.bts
         console.log "[BitShares-JS] enabled\t",window.bts
-        @wallet_api = new window.bts.client.WalletAPI()
+        @wallet_api = new window.bts.client.WalletAPI(null, @RpcService)
         @rpc_service_request = @RpcService.request
         @RpcService.request = @request # proxy requests
         @log_hide=
@@ -51,18 +51,21 @@ class BitsharesJsRpc
             err = null
             try
                 ret = fun.apply(@wallet_api, params)
-                ret = null if ret is undefined
-                ###if ret["then"]
+                if ret?["then"]
+                    #console.log 'promise',method
                     ret.then(
                         (result)->
+                            ret = result
+                            ret = null if ret is undefined
                             defer.resolve result:ret
                         (error)->
                             err = error
                             error = message:error unless error.message
                             defer.reject data:error:error.message
                     )
-                else###
-                defer.resolve result:ret
+                else
+                    ret = null if ret is undefined
+                    defer.resolve result:ret
             catch error
                 err = error
                 error = message:error unless error.message
