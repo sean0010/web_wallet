@@ -6,7 +6,7 @@ class BitsharesJsRpc
     constructor: (@RpcService, @q) ->
         return unless window.bts
         console.log "[BitShares-JS] enabled\t",window.bts
-        @jwallet_api = new window.bts.wallet.WalletAPI()
+        @jwallet_api = new window.bts.client.WalletAPI()
         @rpc_service_request = @RpcService.request # proxy
         @RpcService.request = @request # proxy requests
         
