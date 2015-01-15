@@ -5,7 +5,7 @@ class BitsharesJsRpc
     
     constructor: (@RpcService, @q) ->
         return unless window.bts
-        console.log "[BitShares-JS] enabled\t",window.bts
+        console.log "[BitShares-JS] enabled\t"#,window.bts
         @wallet_api = new window.bts.client.WalletAPI null, @RpcService
         @rpc_service_request = @RpcService.request
         @RpcService.request = @request # proxy requests
@@ -47,13 +47,14 @@ class BitsharesJsRpc
                 when 'wallet'
                     @wallet_api[api_function]
         )()
-        log_intercept= =>
-            console.log "[BitShares-JS] #{api_group}\tintercept\t", method, params,'return',ret,'error',err unless @log_hide[method]
-        
         defer = @q.defer()
         if fun #and false
             ret = null
             err = null
+            log_intercept= =>
+                unless @log_hide[method]
+                    console.log "[BitShares-JS] #{api_group}\tintercept\t", method, params,'return',JSON.stringify ret,ret,(if err then 'error\n'+err.stack),err
+            
             promise = null
             try
                 ret = fun.apply(@wallet_api, params)
@@ -66,7 +67,7 @@ class BitsharesJsRpc
             catch error
                 err = error
                 error = message:error unless error.message
-                if error.message.match /wallet.not_found/
+                if error.message.match /wallet.not_found/ # /$wallet.not_found/ did not match
                     navigate_to("createwallet") unless window.location.hash == "#/createwallet"
                 else if error.message.match /wallet.must_be_opened/
                     unless window.location.hash == "#/createwallet"
