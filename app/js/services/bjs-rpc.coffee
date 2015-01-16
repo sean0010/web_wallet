@@ -10,10 +10,20 @@ class BitsharesJsRpc
         @rpc_service_request = @RpcService.request
         @RpcService.request = @request
         @log_hide=
+            get_info: on
             wallet_get_info: on
             blockchain_get_security_state:on
             get_config:on
         
+        @aliases=((def)-># add aliases
+            aliases = {}
+            for method in def.methods
+                if method.aliases
+                    for alias in method.aliases
+                        aliases[alias] = method.method_name
+            aliases
+        )(window.bts.client.WalletAPI.libraries_api_wallet)
+
     request: (method, params, error_handler) =>
         defer = @q.defer()
         if method is 'execute_command_line'
@@ -31,13 +41,9 @@ class BitsharesJsRpc
             else
                 method = params
                 params = ""
-                
-        method = switch method
-            when 'get_info'
-                'wallet_' + method
-            else
-                method
         
+        method = ((m)->if m then m else method) @aliases[method]
+
         api_group = null
         fun = (=>
             prefix_index = method.indexOf '_'
