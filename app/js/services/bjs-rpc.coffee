@@ -47,14 +47,17 @@ class BitsharesJsRpc
                 when 'wallet'
                     @wallet_api[api_function]
         )()
+        log_response=(intercept) =>
+            unless @log_hide[method]
+                ret_string = ""#JSON.stringify ret
+                type = if intercept then "intercept" else "pass-through"
+                console.log "[BitShares-JS] #{api_group}\t#{type}\t", method, params,'return:',ret,ret_string,'error:',(if err then err.stack),err
+            return
+        
         defer = @q.defer()
-        if fun #and false
+        if fun #and false #'and false' disable bitshares-js but keep logging
             ret = null
             err = null
-            log_intercept= =>
-                unless @log_hide[method]
-                    console.log "[BitShares-JS] #{api_group}\tintercept\t", method, params,'return',JSON.stringify ret,ret,(if err then 'error\n'+err.stack),err
-            
             promise = null
             try
                 ret = fun.apply(@wallet_api, params)
@@ -67,15 +70,14 @@ class BitsharesJsRpc
             catch error
                 err = error
                 error = message:error unless error.message
+                defer.reject data:error:error.message
                 if error.message.match /wallet.not_found/ # /$wallet.not_found/ did not match
                     navigate_to("createwallet") unless window.location.hash == "#/createwallet"
                 else if error.message.match /wallet.must_be_opened/
                     unless window.location.hash == "#/createwallet"
                         navigate_to("unlockwallet") unless window.location.hash == "#/unlockwallet"
-                else
-                    defer.reject data:error:error.message
             finally
-                log_intercept() unless promise
+                log_response intercept=true unless promise
             
             if promise
                 console.log 'promise',method
@@ -84,12 +86,14 @@ class BitsharesJsRpc
                         ret = result
                         ret = null if ret is undefined
                         defer.resolve result:ret
-                        log_intercept()
+                        log_response intercept=true
+                        return
                     (error)->
                         err = error
                         error = message:error unless error.message
                         defer.reject data:error:error.message
-                        log_intercept()
+                        log_response intercept=true
+                        return
                 ).done()
         else # proxy
             #console.log '[BitShares-JS] pass-through\t',method,params
@@ -97,14 +101,17 @@ class BitsharesJsRpc
             err = null
             promise = @rpc_service_request method, params, error_handler
             promise.then(
-                (result)=>
+                (result)->
                     ret = result
                     defer.resolve result
-                (error)=>
+                    log_response intercept=false
+                    return
+                (error)->
                     err = error
-                    defer.reject error
-            ).finally ()=>
-                console.log "[BitShares-JS] #{api_group}\tpass-through\t", method, params,'return',ret?.result,'error',err unless @log_hide[method]
+                    defer.reject data:error:message error.message
+                    log_response intercept=false
+                    return
+            )
         
         defer.promise
 
