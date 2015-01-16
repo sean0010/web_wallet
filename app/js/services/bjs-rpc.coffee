@@ -8,13 +8,14 @@ class BitsharesJsRpc
         console.log "[BitShares-JS] enabled\t"#,window.bts
         @wallet_api = new window.bts.client.WalletAPI null, @RpcService
         @rpc_service_request = @RpcService.request
-        @RpcService.request = @request # proxy requests
+        @RpcService.request = @request
         @log_hide=
             wallet_get_info: on
             blockchain_get_security_state:on
             get_config:on
         
     request: (method, params, error_handler) =>
+        defer = @q.defer()
         if method is 'execute_command_line'
             params = params[0]
             i = params.indexOf ' '
@@ -47,52 +48,54 @@ class BitsharesJsRpc
                 when 'wallet'
                     @wallet_api[api_function]
         )()
-        log_response=(intercept) =>
+        
+        ret = null
+        err = null
+        promise = null
+        handle_response=(intercept=true) =>
             unless @log_hide[method]
                 ret_string = ""#JSON.stringify ret
                 type = if intercept then "intercept" else "pass-through"
-                console.log "[BitShares-JS] #{api_group}\t#{type}\t", method, params,'return:',ret,ret_string,'error:',(if err then err.stack),err
+                console.log "[BitShares-JS] #{api_group}\t#{type}\t", method, params,'return:',ret,ret_string,'error:',(if err then err.stack else err)
+            
+            if err
+                err = message:err unless err.message
+                err = data:error: err
+                defer.reject err
+                error_handler err if error_handler
+            else
+                ret = null if ret is undefined
+                defer.resolve result:ret
+            
             return
         
-        defer = @q.defer()
         if fun #and false #'and false' disable bitshares-js but keep logging
-            ret = null
-            err = null
-            promise = null
             try
                 ret = fun.apply(@wallet_api, params)
-                ret = null if ret is undefined
                 if ret?["then"]
                     promise = ret
-                else
-                    ret = null if ret is undefined
-                    defer.resolve result:ret
+
             catch error
                 err = error
-                error = message:error unless error.message
-                defer.reject data:error:error.message
+                #error = message:error unless error.message
                 if error.message.match /wallet.not_found/ # /$wallet.not_found/ did not match
                     navigate_to("createwallet") unless window.location.hash == "#/createwallet"
                 else if error.message.match /wallet.must_be_opened/
                     unless window.location.hash == "#/createwallet"
                         navigate_to("unlockwallet") unless window.location.hash == "#/unlockwallet"
             finally
-                log_response intercept=true unless promise
+                handle_response() unless promise
             
             if promise
                 console.log 'promise',method
                 ret.then(
                     (result)->
                         ret = result
-                        ret = null if ret is undefined
-                        defer.resolve result:ret
-                        log_response intercept=true
+                        handle_response()
                         return
                     (error)->
                         err = error
-                        error = message:error unless error.message
-                        defer.reject data:error:error.message
-                        log_response intercept=true
+                        handle_response()
                         return
                 ).done()
         else # proxy
@@ -101,15 +104,13 @@ class BitsharesJsRpc
             err = null
             promise = @rpc_service_request method, params, error_handler
             promise.then(
-                (result)->
-                    ret = result
-                    defer.resolve result
-                    log_response intercept=false
+                (response)->
+                    ret = response.result
+                    handle_response intercept=false
                     return
                 (error)->
                     err = error
-                    defer.reject data:error:message error.message
-                    log_response intercept=false
+                    handle_response intercept=false
                     return
             )
         
