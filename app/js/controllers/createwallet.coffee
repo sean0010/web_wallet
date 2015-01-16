@@ -33,7 +33,6 @@ angular.module("app").controller "CreateWalletController", ($scope, $rootScope, 
     on_mouse_event = (event) ->
         #console.log event.type, event
         return unless $scope.entropy_collection
-        return unless $scope.license_accepted
         if private_entropy.length >= 1000
             $scope.$apply ->
                 $scope.entropy_collection = off
@@ -63,9 +62,9 @@ angular.module("app").controller "CreateWalletController", ($scope, $rootScope, 
     $rootElement.on 'mousemove', (event) ->
         on_mouse_event event
         #console.log event
-        on_mouse_event event.originalEvent.changedTouches[0] 
+        #on_mouse_event event.originalEvent.changedTouches[0] 
     $rootElement.on 'mousetouch', (event) ->
         on_mouse_event(event)
     $rootElement.on 'touchmove', (event) ->
         #console.log event
-        on_mouse_event event.originalEvent.changedTouches[0] 
+        on_mouse_event event.originalEvent.changedTouches[0]
