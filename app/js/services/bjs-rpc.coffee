@@ -13,6 +13,7 @@ class BitsharesJsRpc
             get_info: on
             wallet_get_info: on
             blockchain_get_security_state:on
+            wallet_account_transaction_history: on
             get_config:on
         
         @aliases=((def)-># add aliases
@@ -26,6 +27,11 @@ class BitsharesJsRpc
 
     request: (method, params, error_handler) =>
         defer = @q.defer()
+        ret = null
+        err = null
+        promise = null
+        api_group = null
+        
         if method is 'execute_command_line'
             params = params[0]
             i = params.indexOf ' '
@@ -43,8 +49,8 @@ class BitsharesJsRpc
                 params = ""
         
         method = ((m)->if m then m else method) @aliases[method]
-
-        api_group = null
+        
+        # function for local implementation
         fun = (=>
             prefix_index = method.indexOf '_'
             return null if prefix_index is -1
@@ -55,9 +61,6 @@ class BitsharesJsRpc
                     @wallet_api[api_function]
         )()
         
-        ret = null
-        err = null
-        promise = null
         handle_response=(intercept=true) =>
             unless @log_hide[method]
                 ret_string = ""#JSON.stringify ret
@@ -75,6 +78,11 @@ class BitsharesJsRpc
             
             return
         
+        if not fun and method.match /^wallet_/
+            err = 'Not Implemented'
+            handle_response()
+            return defer.promise
+        
         if fun #and false #'and false' disable bitshares-js but keep logging
             try
                 ret = fun.apply(@wallet_api, params)
@@ -84,9 +92,9 @@ class BitsharesJsRpc
             catch error
                 err = error
                 #error = message:error unless error.message
-                if error.message.match /wallet.not_found/ # /$wallet.not_found/ did not match
+                if error.message.match /^wallet.not_found/
                     navigate_to("createwallet") unless window.location.hash == "#/createwallet"
-                else if error.message.match /wallet.must_be_opened/
+                else if error.message.match /^wallet.must_be_opened/
                     unless window.location.hash == "#/createwallet"
                         navigate_to("unlockwallet") unless window.location.hash == "#/unlockwallet"
             finally
@@ -103,22 +111,27 @@ class BitsharesJsRpc
                         err = error
                         handle_response()
                         return
-                ).done()
+                )
         else # proxy
             #console.log '[BitShares-JS] pass-through\t',method,params
-            ret = null
-            err = null
-            promise = @rpc_service_request method, params, error_handler
-            promise.then(
-                (response)->
-                    ret = response.result
-                    handle_response intercept=false
-                    return
-                (error)->
-                    err = error
-                    handle_response intercept=false
-                    return
-            )
+            this_error_handler=(error)->
+                err = error
+                handle_response intercept=false
+            try
+                promise = @rpc_service_request method, params, this_error_handler
+                promise.then(
+                    (response)->
+                        ret = response.result
+                        handle_response intercept=false
+                        return
+                    (error)->
+                        err = error
+                        handle_response intercept=false
+                        return
+                )
+            catch error
+                err = error
+                handle_response intercept=false
         
         defer.promise
 
