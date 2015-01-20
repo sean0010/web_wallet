@@ -1,0 +1,3 @@
+echo exports.Buffer=Buffer > buffer.js
+browserify -s buffer buffer.js > vendor/js/buffer.js
+rm buffer.js

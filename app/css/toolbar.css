@@ -111,3 +111,12 @@ li[disabled] a {
 	font-size: 9px;
 	clear: right;
 }
+
+@media only screen and (max-width:632px) {
+    .logo-panel {
+        display: none;
+    }
+    .fixed_header .body {
+        top: 20px;
+    }
+}
