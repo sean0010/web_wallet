@@ -65,9 +65,12 @@ class BitsharesJsRpc
         
         handle_response=(intercept=true) =>
             unless @log_hide[method]
-                ret_string = ""#JSON.stringify ret
                 type = if intercept then "intercept" else "pass-through"
-                console.log "[BitShares-JS] #{api_group}\t#{type}\t", method, params,'return:',ret,ret_string,'error:',(if err then err.stack else err)
+                error_label = if err then "error:" else ""
+                error_value = if err then (if err.stack then err.stack else (JSON.stringify err)) else ""
+                return_label = if ret then "return:" else ""
+                return_value = if ret then ret else "" # stringify will produce too much output
+                console.log "[BitShares-JS] #{api_group}\t#{type}\t", method, params,return_label,return_value,error_label,error_value
             
             if err
                 err = message:err unless err.message
