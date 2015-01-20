@@ -7,8 +7,10 @@ class BitsharesJsRpc
         return unless window.bts
         console.log "[BitShares-JS] enabled\t"#,window.bts
         @wallet_api = new window.bts.client.WalletAPI null, @RpcService
+        # makes the wallet API available from the browser's console
+        window.wallet = @wallet_api 
         @rpc_service_request = @RpcService.request
-        @RpcService.request = @request
+        @RpcService.request = @request # proxy
         @log_hide=
             get_info: on
             wallet_get_info: on
@@ -32,7 +34,7 @@ class BitsharesJsRpc
         promise = null
         api_group = null
         
-        if method is 'execute_command_line'
+        if method is 'execute_command_line' # console
             params = params[0]
             i = params.indexOf ' '
             if i isnt -1
@@ -46,7 +48,7 @@ class BitsharesJsRpc
                     params[i] = p
             else
                 method = params
-                params = ""
+                params = []
         
         method = ((m)->if m then m else method) @aliases[method]
         
@@ -79,11 +81,11 @@ class BitsharesJsRpc
             return
         
         if not fun and method.match /^wallet_/
-            err = 'Not Implemented'
+            err = new Error 'Not Implemented'
             handle_response()
             return defer.promise
         
-        if fun #and false #'and false' disable bitshares-js but keep logging
+        if fun #and false # false to disable bitshares-js but keep logging
             try
                 ret = fun.apply(@wallet_api, params)
                 if ret?["then"]

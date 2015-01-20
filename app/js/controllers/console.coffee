@@ -71,7 +71,7 @@ angular.module("app").controller "ConsoleController", ($scope, $location, RpcSer
             if response.data.error
                 result = response.data.error
                 result = result.message if result.message
-                ConsoleState.outputs.unshift(">> " + cmd + " \n\n" + result)
+                ConsoleState.outputs.unshift(">> " + cmd + " \n\n" + JSON.stringify result)
                 return true
             else
                 return false
